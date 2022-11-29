@@ -1,4 +1,4 @@
-module github.com/libdns/godaddy
+module toca.io/libdns/godaddy
 
 go 1.18
 

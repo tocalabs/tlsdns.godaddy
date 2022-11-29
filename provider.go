@@ -29,7 +29,7 @@ func getRecordName(zone, name string) string {
 }
 
 func (p *Provider) getApiHost() string {
-	if p.APIHost !== "" {
+	if p.APIHost != "" {
 		return p.APIHost
 	}
 	return "https://api.godaddy.com"
