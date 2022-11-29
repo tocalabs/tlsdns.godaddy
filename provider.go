@@ -17,6 +17,7 @@ import (
 // Provider godaddy dns provider
 type Provider struct {
 	APIToken string `json:"api_token,omitempty"`
+	APIHost string
 }
 
 func getDomain(zone string) string {
@@ -28,6 +29,9 @@ func getRecordName(zone, name string) string {
 }
 
 func (p *Provider) getApiHost() string {
+	if p.APIHost !== "" {
+		return p.APIHost
+	}
 	return "https://api.godaddy.com"
 }
 
