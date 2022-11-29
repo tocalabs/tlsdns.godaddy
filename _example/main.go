@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 
-	godaddy "tocabot.visualstudio.com/TocaGenesis/_git/tlsdns.godaddy"
+	"github.com/joho/godotenv"
+
 	"github.com/libdns/libdns"
+	godaddy "github.com/tocalabs/tlsdns.godaddy"
 )
 
 func main() {
