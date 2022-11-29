@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	godaddy "toca.io/libdns/godaddy"
+	godaddy "tocabot.visualstudio.com/TocaGenesis/_git/tlsdns.godaddy"
 	"github.com/libdns/libdns"
 )
 

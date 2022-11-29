@@ -1,4 +1,4 @@
-module toca.io/libdns/godaddy
+module tocabot.visualstudio.com/TocaGenesis/_git/tlsdns.godaddy
 
 go 1.18
 
