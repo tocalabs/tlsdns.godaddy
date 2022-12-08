@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -181,8 +182,9 @@ func (p *Provider) DeleteRecords(ctx context.Context, zone string, records []lib
 	}
 
 	var data []PostRecord
-
+	var names []string
 	for _, record := range currentRecords {
+		names = append(names, record.Value)
 		data = append(data, PostRecord{
 			Data: record.Value,
 			Name: record.Name,
@@ -195,8 +197,8 @@ func (p *Provider) DeleteRecords(ctx context.Context, zone string, records []lib
 	if err != nil {
 		return nil, err
 	}
-
-	req, err := http.NewRequest("PUT", p.getApiHost()+"/v1/domains/"+getDomain(zone)+"/records", bytes.NewBuffer(dataByte))
+	log.Println(p.getApiHost()+"/v1/domains/"+getDomain(zone)+"/records", dataByte)
+	req, err := http.NewRequest("PUT", p.getApiHost()+"/v1/domains/"+getDomain(zone)+"/records?names="+strings.Join(names,","), bytes.NewBuffer(dataByte))
 	if err != nil {
 		return nil, err
 	}
