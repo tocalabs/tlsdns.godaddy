@@ -159,69 +159,73 @@ func (p *Provider) DeleteRecords(ctx context.Context, zone string, records []lib
 	for _, record := range records {
 		names = append(names, record.Name)
 	}
-	currentRecords, err := p.GetRecords(ctx, zone)
-	if err != nil {
-		return nil, err
-	}
+
+	// currentRecords, err := p.GetRecords(ctx, zone)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	var deletedRecords []libdns.Record
 
+	// for _, record := range records {
+	// 	for i, currentRecord := range currentRecords {
+	// 		if currentRecord.Type == record.Type && currentRecord.Name == getRecordName(zone, record.Name) {
+	// 			currentRecords = append(currentRecords[:i], currentRecords[i+1:]...)
+	// 			deletedRecords = append(deletedRecords, currentRecord)
+	// 			break
+	// 		}
+	// 	}
+	// }
+
+	// type PostRecord struct {
+	// 	Data string `json:"data"`
+	// 	Name string `json:"name"`
+	// 	TTL  int    `json:"ttl"`
+	// 	Type string `json:"type"`
+	// }
+
+	// var data []PostRecord
+
+	// for _, record := range currentRecords {
+	// 	data = append(data, PostRecord{
+	// 		Data: record.Value,
+	// 		Name: record.Name,
+	// 		TTL:  int(record.TTL / time.Second),
+	// 		Type: record.Type,
+	// 	})
+	// }
+
+	// dataByte, err := json.Marshal(data)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// log.Println(p.getApiHost()+"/v1/domains/"+getDomain(zone)+"/records", data)
 	for _, record := range records {
-		for i, currentRecord := range currentRecords {
-			if currentRecord.Type == record.Type && currentRecord.Name == getRecordName(zone, record.Name) {
-				currentRecords = append(currentRecords[:i], currentRecords[i+1:]...)
-				deletedRecords = append(deletedRecords, currentRecord)
-				break
-			}
+		req, err := http.NewRequest("DELETE", p.getApiHost()+"/v1/domains/"+getDomain(zone)+"/records/"+record.Type+"/"+record.Name, nil)
+		if err != nil {
+			return nil, err
 		}
-	}
+		req.Header.Add("Authorization", "sso-key "+p.APIToken)
+		req.Header.Add("Content-Type", "application/json")
 
-	type PostRecord struct {
-		Data string `json:"data"`
-		Name string `json:"name"`
-		TTL  int    `json:"ttl"`
-		Type string `json:"type"`
-	}
+		client := http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
 
-	var data []PostRecord
+		if resp.StatusCode != http.StatusOK {
+			bodyBytes, _ := ioutil.ReadAll(resp.Body)
+			return nil, fmt.Errorf("could not delete records: Domain: %s; Records: %v, Status: %v; Body: %s",
+				getDomain(zone), record, resp.StatusCode, string(bodyBytes))
+		}
 
-	for _, record := range currentRecords {
-		data = append(data, PostRecord{
-			Data: record.Value,
-			Name: record.Name,
-			TTL:  int(record.TTL / time.Second),
-			Type: record.Type,
-		})
-	}
-
-	dataByte, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-	log.Println(p.getApiHost()+"/v1/domains/"+getDomain(zone)+"/records", data)
-	req, err := http.NewRequest("PUT", p.getApiHost()+"/v1/domains/"+getDomain(zone)+"/records?names="+strings.Join(names, ","), bytes.NewBuffer(dataByte))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Add("Authorization", "sso-key "+p.APIToken)
-	req.Header.Add("Content-Type", "application/json")
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		return nil, fmt.Errorf("could not delete records: Domain: %s; Records: %v, Status: %v; Body: %s",
-			zone, currentRecords, resp.StatusCode, string(bodyBytes))
-	}
-
-	_, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+		_, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		deletedRecords = append(deletedRecords, record)
 	}
 
 	return deletedRecords, nil
