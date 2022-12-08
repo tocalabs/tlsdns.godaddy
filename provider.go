@@ -17,7 +17,7 @@ import (
 // Provider godaddy dns provider
 type Provider struct {
 	APIToken string `json:"api_token,omitempty"`
-	APIHost string
+	APIHost  string
 }
 
 func getDomain(zone string) string {
@@ -155,7 +155,10 @@ func (p *Provider) SetRecords(ctx context.Context, zone string, records []libdns
 // DeleteRecords deletes the records from the zone.
 func (p *Provider) DeleteRecords(ctx context.Context, zone string, records []libdns.Record) ([]libdns.Record, error) {
 	log.Println("DeleteRecords", zone, records)
-
+	var names []string
+	for _, record := range records {
+		names = append(names, record.Name)
+	}
 	currentRecords, err := p.GetRecords(ctx, zone)
 	if err != nil {
 		return nil, err
@@ -181,9 +184,8 @@ func (p *Provider) DeleteRecords(ctx context.Context, zone string, records []lib
 	}
 
 	var data []PostRecord
-	var names []string
+
 	for _, record := range currentRecords {
-		names = append(names, record.Value)
 		data = append(data, PostRecord{
 			Data: record.Value,
 			Name: record.Name,
@@ -196,8 +198,8 @@ func (p *Provider) DeleteRecords(ctx context.Context, zone string, records []lib
 	if err != nil {
 		return nil, err
 	}
-	log.Println(p.getApiHost()+"/v1/domains/"+getDomain(zone)+"/records", dataByte)
-	req, err := http.NewRequest("PUT", p.getApiHost()+"/v1/domains/"+getDomain(zone)+"/records?names="+strings.Join(names,","), bytes.NewBuffer(dataByte))
+	log.Println(p.getApiHost()+"/v1/domains/"+getDomain(zone)+"/records", data)
+	req, err := http.NewRequest("PUT", p.getApiHost()+"/v1/domains/"+getDomain(zone)+"/records?names="+strings.Join(names, ","), bytes.NewBuffer(dataByte))
 	if err != nil {
 		return nil, err
 	}
