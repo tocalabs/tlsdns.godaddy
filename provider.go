@@ -215,7 +215,7 @@ func (p *Provider) DeleteRecords(ctx context.Context, zone string, records []lib
 		}
 		defer resp.Body.Close()
 
-		if resp.StatusCode != 204 {
+		if resp.StatusCode != 204 && resp.StatusCode != http.StatusOK {
 			bodyBytes, _ := ioutil.ReadAll(resp.Body)
 			return nil, fmt.Errorf("could not delete records: Domain: %s; Records: %v, Status: %v; Body: %s",
 				getDomain(zone), record, resp.StatusCode, string(bodyBytes))
